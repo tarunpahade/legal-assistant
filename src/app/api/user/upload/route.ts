@@ -107,9 +107,10 @@ export async function POST(request: NextRequest) {
         if (namespaceExists) {
           return NextResponse.json({ message: "Namespace already exists." }, { status: 400 }); // Send response if it exists
         } else {
+          const pdfName=pdfFile!.name
           const results = await Users.updateOne(
             { name: usercookie.name },
-            { $push: { namespaces: pdfFile.name } }
+            { $addToSet: { namespaces: [pdfName] } }
           );
           console.log(results);
           
