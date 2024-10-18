@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const { name } = reqBody;
     console.log(reqBody);
     
-   const user1 = await Users.findOne({ name });
+    const user1 = await Users.findOne({ name });
     if (user1) {
       return NextResponse.json(
         { error: "User already exists" },
