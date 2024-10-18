@@ -1,12 +1,10 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { Pinecone } from '@pinecone-database/pinecone';
 
-export async function DELETE(request: NextRequest) { // Changed from GET to DELETE
+export async function POST(request: NextRequest) { // Changed from DELETE to POST
   try {
-    const { searchParams } = new URL(request.url); // Extract search parameters from the request URL
-    const encodedNamespace: string | null = searchParams.get('name'); // Get the 'name' parameter
+    const { name: encodedNamespace } = await request.json(); // Extract 'name' from the request body
 
     if (!encodedNamespace) {
       return NextResponse.json({ error: "Namespace name is required" }, { status: 400 });
@@ -21,14 +19,19 @@ export async function DELETE(request: NextRequest) { // Changed from GET to DELE
     });
 
     // Connect to the Pinecone index
-    const index = pc.Index(process.env.PINECONE_INDEX!);
+    const index = pc.index(process.env.PINECONE_INDEX!);
 
-    // Delete the specified namespace
-    const stats: any = await index._deleteOne(namespace);
-    console.log(stats);
+
+
+    const deleteResponse: any = await index.namespace(namespace).deleteAll();
+    // Call the delete method
+    console.log(deleteResponse); // Log the response from the delete operation
+
 
     return NextResponse.json({
-      message: "Namespace deleted successfully" // Updated response message
+      message: "Namespace deleted successfully" ,
+      deleteResponse,
+      // Updated response message
     });
   } catch (error) {
     console.error("Error deleting namespace:", error); // Updated error log message

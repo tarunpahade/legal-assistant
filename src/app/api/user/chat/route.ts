@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { Pinecone } from '@pinecone-database/pinecone';
+import { Pinecone } from "@pinecone-database/pinecone";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { ChatOpenAI } from "@langchain/openai";
 
 export async function POST(request: NextRequest) {
   try {
-    const { query,namespace } = await request.json();
-    console.log('query', query);
+    const { query, namespace } = await request.json();
+    console.log("query", query);
 
     const embeddings = new OpenAIEmbeddings({
       apiKey: process.env.OPENAI_API_KEY,
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize Pinecone client
     const pc = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY!
+      apiKey: process.env.PINECONE_API_KEY!,
     });
 
     // Connect to the Pinecone index
@@ -34,10 +34,16 @@ export async function POST(request: NextRequest) {
       includeMetadata: true,
     });
 
-    console.log('Pinecone query response:', airesponse.matches);
+    const firstMatchMetadata = airesponse.matches[0].metadata!;
+
+    const pageNumber = firstMatchMetadata["loc.pageNumber"];
+    const linesFrom = firstMatchMetadata["loc.lines.from"];
+    const linesTo = firstMatchMetadata["loc.lines.to"];
 
     // Extract relevant text from the matches
-    const relevantText = airesponse.matches.map((match:any) => match.metadata.text).join('\n\n');
+    const relevantText = airesponse.matches
+      .map((match: any) => match.metadata.text)
+      .join("\n\n");
 
     // Use ChatOpenAI to generate a response based on the retrieved documents
     const chatModel = new ChatOpenAI({
@@ -46,17 +52,26 @@ export async function POST(request: NextRequest) {
     });
 
     const response = await chatModel.call([
-      { role: "system", content: "You are a helpful AI assistant knowledgeable about the Transformer model and attention mechanisms in machine learning." },
-      { role: "user", content: `Based on the following context, answer this question: ${query}\n\nContext: ${relevantText}` }
+      {
+        role: "system",
+        content: "You are a helpful AI assistant knowledge about Indian law.",
+      },
+      {
+        role: "user",
+        content: `Based on the following context, answer this question: ${query}\n\nContext: ${relevantText}`,
+      },
     ]);
 
     return NextResponse.json({
       answer: response.content,
+      relevantText,
+      sources: { pageNumber, linesFrom, linesTo },
     });
-
   } catch (error) {
     console.error("Error processing chat query:", error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
   }
 }
-
