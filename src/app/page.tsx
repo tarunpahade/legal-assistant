@@ -86,7 +86,8 @@ export default function LandingPage() {
         <section className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">Pricing</h2>
           <p className="text-xl text-gray-600 mb-8">
-            Get access to all features for just $800 a month.
+          800/month. 
+             Contact number:- 8484917439     
           </p>
           <Button size="lg" className="text-lg px-8 border border-black text-black bg-white">
             Subscribe Now
@@ -126,6 +127,7 @@ export default function LandingPage() {
 
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4 text-center">
+        Get in touch 8484917439
           <p>&copy; 2024 LegalAI Assistant. All rights reserved.</p>
         </div>
       </footer>
